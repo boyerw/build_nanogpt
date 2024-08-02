@@ -1,0 +1,6 @@
+name: gpt
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+prefix: /Users/wyattboyer/anaconda3/envs/gpt
