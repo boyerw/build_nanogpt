@@ -1,10 +1,11 @@
 name: gpt
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - python=3.11
   - jupyter
   - pytorch::pytorch
-  - conda-forge::matplotlib
-  - conda-forge::transformers
+  - matplotlib
+  - transformers
 prefix: /Users/wyattboyer/anaconda3/envs/gpt
