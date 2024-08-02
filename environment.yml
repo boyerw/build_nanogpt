@@ -3,4 +3,8 @@ channels:
   - defaults
 dependencies:
   - python=3.11
+  - jupyter
+  - pytorch::pytorch
+  - conda-forge::matplotlib
+  - conda-forge::transformers
 prefix: /Users/wyattboyer/anaconda3/envs/gpt
