@@ -9,7 +9,7 @@ class CausalSelfAttention(nn.Module):
     def __init__(self, config):
         super().__init__()
         # Stores the weights for getting key, value, and query
-        self.c_atten = nn.Linear(config.n_embed, 3*config.n_embed)
+        self.c_attn = nn.Linear(config.n_embd, 3*config.n_embd)
         self.c_proj = nn.Linear(config.n_embd, config.n_embd)
         self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size)
                                                 .view(1, 1, config.block_size, config.block_size)))
@@ -18,7 +18,7 @@ class CausalSelfAttention(nn.Module):
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimension
-        qkv = self.c_atten(x)
+        qkv = self.c_attn(x)
         q, k, v = qkv.split(self.n_embd, dim=2)
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
@@ -54,8 +54,8 @@ class Block(nn.Module):
         self.config = config
         self.ln_1 = nn.LayerNorm(config.n_embd)
         self.attn = CausalSelfAttention(config)
-        self.ln2 = nn.LayerNorm(config.n_embd)
-        self.mlp = nn.MLP(config)
+        self.ln_2 = nn.LayerNorm(config.n_embd)
+        self.mlp = MLP(config)
 
     def forward(self, x):
         x = x + self.attn(self.ln_1(x))
@@ -77,10 +77,10 @@ class GPT(nn.Module):
         self.config = config
     
         self.transformer = nn.ModuleDict(dict(
-            wte = nn.Embeding(config.vocab_size, config.n_embd),
+            wte = nn.Embedding(config.vocab_size, config.n_embd),
             wpe = nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
-            ln_f = nn.LayerNorm(config.n_embd, bias=False),    
+            ln_f = nn.LayerNorm(config.n_embd),    
         ))
 
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
@@ -133,6 +133,7 @@ class GPT(nn.Module):
                     sd[k].copy_(sd_hf[k])
 
         return model
-    
+
+# -------- 
 model = GPT.from_pretrained('gpt2')
 print("Didn't crash, yay!")
