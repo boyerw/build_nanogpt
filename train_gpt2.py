@@ -85,6 +85,26 @@ class GPT(nn.Module):
 
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
+    def forward(self, idx, target=None):
+        word_tkn = self.transformer.wte(idx)
+        pos_tkn = self.transformer.wpe(range(self.config.block_size))
+        x = word_tkn + pos_tkn
+
+        for i in range(self.congif.n_layer):
+            x = self.transformer.h[i](x)
+        
+        x = self.transformer.ln_f(x)
+
+        logits = self.lm_head(x)
+
+        if target is not None:
+            loss = F.crossentropy(logits, target)
+        else:
+            loss = None
+
+        return logits, loss
+
+
     @classmethod
     def from_pretrained(cls, model_type):
         """Loads pretrained GPT-2 model weights from huggingface"""
